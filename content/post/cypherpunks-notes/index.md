@@ -75,16 +75,15 @@ $$\forall x\in U,Pr(x)=\frac{1}{|U|}$$
 
 #### Events
 
-An event is a subset of a universe, $A\subseteq U$, and is to be understood as something that might or might not happen. Intuitively, when dealing with probabilities, we are considering the likelihood of certain outcomes. Each of these potential outcomes, or collections of outcomes, is called an _event_. The probability of an event $A\subseteq U$ occuring is
+An event is a subset of a universe and is to be understood as something that might or might not happen. Intuitively, when dealing with probabilities, we are considering the likelihood of certain outcomes. Each of these potential outcomes, or collections of outcomes, is called an _event_. The probability of an event $A\subseteq U$ occuring is
 $$Pr(A)=\sum_{x\in A}Pr(x)\quad\in[0,1]$$
-Since this is a probability, the outputs are in the range $[0,1]$.
 
-To say this less formally, the probability of an event $A$ occuring, $Pr(A)$, is the sum of all the probabilities of all the outcomes that make up $A$. To illustrate this, let's think of tossing coins. Suppose $U$ is the set of all outcomes when rolling a fair six-sided die, i.e., $U=\lbrace1,2,3,4,5,6\rbrace$. If you consider the event $A$ as rolling an _even_ number, then $A=\lbrace2,4,6\rbrace$. In a _uniform distribution_ (like a fair die), the probability of each outcome is $\frac{1}{|U|}=\frac{1}{6}$. To find $Pr(A)$, you would sum up the probabilities of the individual outcomes in $A$:
+To say this less formally, the probability of an event $A$ occuring, $Pr(A)$, is the sum of all the probabilities of the individual outcomes that make up $A$. To illustrate this, let's discuss an example. Suppose $U$ is the set of all outcomes when rolling a fair six-sided die, i.e., $U=\lbrace1,2,3,4,5,6\rbrace$. If you consider the event $A$ as rolling an _even_ number, then $A=\lbrace2,4,6\rbrace$. In a _uniform distribution_ (like a fair die), the probability of each outcome is $\frac{1}{|U|}=\frac{1}{6}$. To find $Pr(A)$, you would sum up the probabilities of the individual outcomes in $A$:
 $$Pr(A)=Pr(2)+Pr(4)+Pr(6)=\frac{1}{6}+\frac{1}{6}+\frac{1}{6}=\frac{1}{2}$$
 
 #### Distribution Vector
 
-Let \\(||U||=n\\) be the cardinality of a universe \\(U\\). Because \\(U\\) is a finite set, we can represent the distribution of every element in \\(U\\) by storing the weights that the distribution assigns to every element in \\(U\\) as an \\(n\\)-vector:
+Let \\(|U|=n\\) be the cardinality of a universe \\(U\\). Because \\(U\\) is a finite set, we can represent the distribution of every element in \\(U\\) by storing the weights that the distribution assigns to every element in \\(U\\) as an \\(n\\)-vector:
 $$\begin{bmatrix}
 Pr(x_0) \\\\
 Pr(x_1) \\\\
@@ -229,7 +228,7 @@ In other words, polynomials have the property that given \\(m+1\\) pairs of poin
 >
 #### Algorithm: Lagrange Interpolation
 
-{{< figure src="/lagrange-interpolation.png" >}}
+{{< figure src="lagrange.png" >}}
 
 ## Finite (Galois) Fields
 
