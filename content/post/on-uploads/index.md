@@ -15,7 +15,7 @@ comments: false
 
 I was introduced to video games when I was very young--I had an older brother. At this age, interacting within them, there were times I was so immersed in the characters on the screen I couldn't tell that there were _characters_. It felt like, a friend--_my_ character, a clone--a two-party match of agency. Not that I thought philosophically of it at that time, but I do remember thinking about the implications of cloning myself. Probably most people have wished they could clone themselves at one point or another, if not to get out of school or some other responsibility. As I've grown older I still think about these implications, though back then I was only considering the biological method of cloning; Now I seriously consider the possibility of replicating minds on silicon.
 
-What follows is a short thought piece on **uploads**, the extension of one's mind onto the digital plane. Importantly, it does not focus too much on _cloning_, rather, digital immortality.
+What follows is a short thought piece on **uploads**, the extension of one's mind onto the digital plane. Importantly, it does not focus too much on _cloning_, rather, on digital immortality.
 
 ## Minds
 

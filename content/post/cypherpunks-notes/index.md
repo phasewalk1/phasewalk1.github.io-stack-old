@@ -2,7 +2,7 @@
 title: "The Cypherpunk's Notes"
 date: 2023-10-16T20:45:33-07:00
 draft: false
-image: cover.png
+image: cover.jpg
 description: "A work-in-progress compilation (and living document) of notes taken while studying various cryptography resources"
 math: true
 toc: true
