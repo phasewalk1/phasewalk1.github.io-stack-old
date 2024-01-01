@@ -6,11 +6,6 @@
 #[main.params]
 #icon = "home"
 #newtab = true
-[[social]]
-identifier = "bluesky"
-name = "Bluesky"
-url = "https://phasewalk1.bsky.social"
-weight = 3
 
 [[social]]
 identifier = "github"
@@ -29,4 +24,3 @@ weight = 2
 
 [social.params]
 icon = "brand-twitter"
-
