@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on phasewalk1</title><link>https://phasewalk1.github.io/post/</link><description>Recent content in Posts on phasewalk1</description><generator>Hugo -- gohugo.io</generator><language>en-us</language><lastBuildDate>Mon, 16 Oct 2023 20:45:33 -0700</lastBuildDate><atom:link href="https://phasewalk1.github.io/post/index.xml" rel="self" type="application/rss+xml"/><item><title>The Cypherpunk's Notes</title><link>https://phasewalk1.github.io/p/the-cypherpunks-notes/</link><pubDate>Mon, 16 Oct 2023 20:45:33 -0700</pubDate><guid>https://phasewalk1.github.io/p/the-cypherpunks-notes/</guid><description>&lt;img src="https://phasewalk1.github.io/p/the-cypherpunks-notes/cover.jpg" alt="Featured image of post The Cypherpunk's Notes" />&lt;blockquote>
+&lt;p>From Dan Boneh&amp;rsquo;s &lt;a class="link" href="https://crypto.stanford.edu/~dabo/courses/OnlineCrypto/" target="_blank" rel="noopener"
+>Cryptography I&lt;/a> and the &lt;a class="link" href="https://leastauthority.com/community-matters/moonmath-manual/" target="_blank" rel="noopener"
+>MoonMath Manual&lt;/a>, to &lt;a class="link" href="https://zkhack.dev/whiteboard/" target="_blank" rel="noopener"
+>ZK Hack&amp;rsquo;s Whiteboard Sessions&lt;/a>; and soon, the &lt;a class="link" href="https://people.cs.georgetown.edu/jthaler/ProofsArgsAndZK.html" target="_blank" rel="noopener"
+>Proofs, Arguments, and Zero-Knowledge&lt;/a> book by Justin Thaler. Many topics I have taken notes for already are not yet included here, as I am working on sectioning it in such a way that the material flows more intuitively; In other words, expect many changes to this document in the future.&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="introduction">Introduction&lt;/h2>
+&lt;p>Cryptography is &lt;em>everywhere&lt;/em>. From securing communications (&lt;a class="link" href="https://en.wikipedia.org/wiki/HTTPS" target="_blank" rel="noopener"
+>HTTPS&lt;/a>, &lt;a class="link" href="https://en.wikipedia.org/wiki/Transport_Layer_Security#SSL_1.0,_2.0,_and_3.0" target="_blank" rel="noopener"
+>SSL/TLS&lt;/a>, &lt;a class="link" href="https://en.wikipedia.org/wiki/Wi-Fi_Protected_Access" target="_blank" rel="noopener"
+>WPA&lt;/a>, etc.) to encrypting sensitive, persisted files, cryptography is a tremendous tool, and forms the basis for many security mechanisms. Cryptography &lt;em>is not&lt;/em> the solution to &lt;em>all&lt;/em> security problems, it is &lt;em>not&lt;/em> reliable if used incorrectly, and it is &lt;em>not&lt;/em> something you should try to invent yourself (there are many examples of broken adhoc designs, and this is why we use the phrase &amp;ldquo;&lt;em>don&amp;rsquo;t roll your own crypto!&lt;/em>&amp;rdquo;).&lt;/p>
+&lt;h2 id="some-notes-on-notation">Some Notes on Notation&lt;/h2>
+&lt;h3 id="discrete-notation">Discrete Notation&lt;/h3>
+&lt;p>There are a few notational concepts that show up a lot in the following material. Some people may be familiar with these already, and others may not be. I figured I&amp;rsquo;d write some notes on them here so the following material is more easily accessible for those who may not have studied Discrete Math yet.&lt;/p>
+&lt;p>We use the symbol $\forall$ to denote the concept of &amp;ldquo;&lt;em>for all&lt;/em>&amp;rdquo;, and the symbol $\in$ denotes the concept &amp;ldquo;&lt;em>in&lt;/em>&amp;rdquo;. We often combine these symbols to make statements such as, &lt;em>for all&lt;/em> $x$ &lt;em>in&lt;/em> the set $X$, which we could explicitly write as
+$$\forall x\in X$$&lt;/p>
+&lt;p>It is also useful to discuss the &lt;em>existence&lt;/em> of arbitrary values. For this, we use the $\exists$ symbol.&lt;/p>
+&lt;p>$$\exists x\in X\implies\text{there exists an }x\text{ in }X$$
+$$\nexists x\in X\implies\text{there does not exist an }x\text{ in }X$$&lt;/p>
+&lt;p>Another concept we like to represent through notation is the phrase &amp;ldquo;&lt;em>such that&lt;/em>&amp;rdquo;, this allows us to restrict certain sets of values to abiding by an arbitrary property. Consider the case in which we&amp;rsquo;d like to discuss the set of all ordered-pairs in $X$ such that no pair contains two of the same values, we may write this as
+$$\lbrace(x,y)\in X\space|\space x\ne y\rbrace$$&lt;/p>
+&lt;p>Combining the above concepts, you should feel comfortable reading expressions like&lt;/p>
+&lt;p>$$\forall x\in X,\exists y\in Y\space|\space f(x)=y$$&lt;/p>
+&lt;h3 id="functional-notation">Functional Notation&lt;/h3>
+&lt;p>When discussing functions, it is useful to be able to relate them to their domain and codomain. This allows us to clearly state the set of all inputs the function can accept, and the set of all outputs the function can generate. We use the notation
+$$f:X\rightarrow Y$$
+to show that $f$ is a function that accepts inputs from the set $X$ and maps them to outputs in the set $Y$.&lt;/p>
+&lt;h2 id="ciphers">Ciphers&lt;/h2>
+&lt;p>A &lt;em>cipher&lt;/em> is a pair of efficient* algorithms $(E,D)$ that are defined over a &lt;em>keyspace&lt;/em> $\mathcal K$, a &lt;em>message space&lt;/em> $\mathcal M$, and a &lt;em>cipher space&lt;/em> $\mathcal C$. For convenience, we say that a cipher is defined over $(\mathcal K,\mathcal M,\mathcal C)$, where
+$$E:\mathcal K\times\mathcal M\rightarrow\mathcal C$$
+$$D:\mathcal K\times\mathcal C\rightarrow\mathcal M$$
+such that for all messages $m$ in the message space ($\forall m\in\mathcal M$), and for all keys $k$ in the keyspace,
+$$D(k,E(k,m))=m$$&lt;/p>
+&lt;h2 id="discrete-probability">Discrete Probability&lt;/h2>
+&lt;h3 id="universe">Universe&lt;/h3>
+&lt;p>Discrete probability is defined over a &lt;em>universe&lt;/em>, denoted \(U\). The universe is a &lt;em>finite set&lt;/em>, and very commonly, simply the set of all \(n\)-bit strings,
+$$U=\lbrace 0,1 \rbrace^n.$$
+It then follows that \(U\) has \(2^n\) elements, or, we could say that the cardinality of the universe \(U\) as defined above, is \(2^n\), and denote it as $|U|$. For example, the universe \(U=\lbrace 0,1\rbrace^2\) is the set of all \(2\)-bit strings, e.g., \(\lbrace 00,01,10,11 \rbrace\).&lt;/p>
+&lt;h3 id="probability-distributions">Probability Distributions&lt;/h3>
+&lt;p>A probability distribution \(Pr\) over a universe \(U\) is a function \(Pr:U\rightarrow[0,1]\) such that
+$$\sum_{x\in U}Pr(x)=1.$$
+To say this less formally, we could say that \(Pr\) is a function that maps an input \(x\in U\) to a value ranging from \(0\) to \(1\), in such a way that the summation of all the images of \(Pr\) equals \(1\).&lt;/p>
+&lt;h4 id="uniform-distribution">Uniform Distribution&lt;/h4>
+&lt;p>A uniform distribution is a type of probability distribution in which all outcomes are &lt;em>equally likely&lt;/em>.
+$$\forall x\in U,Pr(x)=\frac{1}{|U|}$$&lt;/p>
+&lt;h4 id="events">Events&lt;/h4>
+&lt;p>An event is a subset of a universe and is to be understood as something that might or might not happen. Intuitively, when dealing with probabilities, we are considering the likelihood of certain outcomes. Each of these potential outcomes, or collections of outcomes, is called an &lt;em>event&lt;/em>. The probability of an event $A\subseteq U$ occuring is
+$$Pr(A)=\sum_{x\in A}Pr(x)\quad\in[0,1]$$&lt;/p>
+&lt;p>To say this less formally, the probability of an event $A$ occuring, $Pr(A)$, is the sum of all the probabilities of the individual outcomes that make up $A$. To illustrate this, let&amp;rsquo;s discuss an example. Suppose $U$ is the set of all outcomes when rolling a fair six-sided die, i.e., $U=\lbrace1,2,3,4,5,6\rbrace$. If you consider the event $A$ as rolling an &lt;em>even&lt;/em> number, then $A=\lbrace2,4,6\rbrace$. In a &lt;em>uniform distribution&lt;/em> (like a fair die), the probability of each outcome is $\frac{1}{|U|}=\frac{1}{6}$. To find $Pr(A)$, you would sum up the probabilities of the individual outcomes in $A$:
+$$Pr(A)=Pr(2)+Pr(4)+Pr(6)=\frac{1}{6}+\frac{1}{6}+\frac{1}{6}=\frac{1}{2}$$&lt;/p>
+&lt;h4 id="distribution-vector">Distribution Vector&lt;/h4>
+&lt;p>Let \(|U|=n\) be the cardinality of a universe \(U\). Because \(U\) is a finite set, we can represent the distribution of every element in \(U\) by storing the weights that the distribution assigns to every element in \(U\) as an \(n\)-vector:
+$$\begin{bmatrix}
+Pr(x_0) \\
+Pr(x_1) \\
+\vdots \\
+Pr(x_n)
+\end{bmatrix}$$&lt;/p>
+&lt;h3 id="random-variables">Random Variables&lt;/h3>
+&lt;p>A random variable is a function that maps outcomes of random processes (like a coin flip, or the roll of a die) to numerical values. In other words, it assigns a value to each possible outcome of a random experiment or sample.&lt;/p>
+&lt;p>Formally, if $U$ is the universe of all possible outcomes of a certain random experiment, then a random variable $x$ is defined as&lt;/p>
+&lt;p>$$x:U\rightarrow V$$
+where $V$ is the set in which $x$ takes its values.&lt;/p>
+&lt;h3 id="uniform-random-variable">Uniform Random Variable&lt;/h3>
+&lt;p>A random variable is said to be uniformly distributed if all the values in its range have an equal likelihood of occuring. Explicitly, let \(U=\lbrace 0,1 \rbrace^n\) be some universe. We write \(r\xleftarrow{R}U\) to denote a &lt;em>&lt;strong>uniform random variable&lt;/strong>&lt;/em> over \(U\), where
+$$\forall a\in U,\quad Pr[r=a]=\frac{1}{||U||}.$$&lt;/p>
+&lt;h2 id="xor">XOR&lt;/h2>
+&lt;p>It is said that all cryptographers do is compute XORs in various ways, and there is some truth to that, so what is XOR?&lt;/p>
+&lt;p>XOR, or &lt;em>exclusive or&lt;/em>, is a &lt;strong>bitwise&lt;/strong> operator, i.e., it operates on sets of bits $\lbrace0,1\rbrace^n$. XOR can be thought of as a modification of the OR operator, so to better understand it, let&amp;rsquo;s review the behavior of OR.&lt;/p>
+&lt;p>The way OR works is intuitive. What it does is essentially, for every two bits $a_i,b_i$, it asks is one OR the other equal to $1$. Taking the OR of $1$ and $0$ outputs $1$, taking the OR of $1$ and $1$ outputs $1$, but the OR of $0$ and $0$ outputs $0$, since neither of the bits are $1$. So,
+$$\lbrace1,1,1,0\rbrace$$
+$$\text{ OR }$$
+$$\lbrace0,1,1,1\rbrace$$
+$$\text{yields }\lbrace1,1,1,1\rbrace$$&lt;/p>
+&lt;p>The difference with XOR is it&amp;rsquo;s &lt;em>exclusive&lt;/em>, meaning it &lt;em>must be one or the other, but not both&lt;/em>.
+$$\lbrace1,1,1,0\rbrace$$
+$$\text{ XOR }$$
+$$\lbrace0,1,1,1\rbrace$$
+$$\text{yields }\lbrace1,0,0,1\rbrace$$
+Also, note that, in the following material, we use the symbol $\oplus$ to denote the bitwise XOR operator.&lt;/p>
+&lt;h2 id="information-theoretics">Information Theoretics&lt;/h2>
+&lt;h3 id="perfect-secrecy">Perfect Secrecy&lt;/h3>
+&lt;p>Let \(\mathcal{K}\) be the keyspace, \(\mathcal M\) be the message space, and \(\mathcal C\) be the cipher space. A cipher \((E,D)\) over \((\mathcal K,\mathcal M,\mathcal C)\) has &lt;strong>perfect secrecy&lt;/strong> if
+$$\forall m_0,m_1\in\mathcal M,\quad ||m_0||=||m_1||,$$
+where \(||m_0||\) denotes the_length of \(m_0\), and
+$$\forall c\in\mathcal C,\quad\text{Pr}[(E(k,m_0)=c)]=\text{Pr}[(E(k,m_1)=c)],$$
+where \(k\) is uniform and random in \(\mathcal K\), i.e., \(k\xleftarrow{R}\mathcal K\). In other words, \((E,D)\) has perfect secrecy if for every message \(m_1,m_2\) in the message space \(\mathcal M\), the length of \(m_1\) and \(m_2\) are the same, and additionality, the probability that the ciphertext \(c\) came from \(m_0\) is equal to the probability that it came from \(m_1\).&lt;/p>
+&lt;h2 id="symmetric-encryption-systems">Symmetric Encryption Systems&lt;/h2>
+&lt;p>Symmetric encryption systems form the building blocks for many modern cryptographic protocols. In a symmetric encryption system, there are two algorithms,&lt;/p>
+&lt;ul>
+&lt;li>$E$: encryption algorithm, and&lt;/li>
+&lt;li>$D$: the decryption algorithm
+&lt;ul>
+&lt;li>important! $D$ is &lt;em>publicly known&lt;/em>: never use a proprietary cipher!&lt;/li>
+&lt;/ul>
+&lt;/li>
+&lt;/ul>
+&lt;p>It is called &lt;em>symmetric&lt;/em> encryption because the two parties, Alice and Bob, &lt;em>share a secret key&lt;/em> $k$.&lt;/p>
+&lt;figure>&lt;img src="symm.png"/>
+&lt;/figure>
+&lt;h3 id="one-time-pad">One Time Pad&lt;/h3>
+&lt;p>The &lt;strong>One Time Pad&lt;/strong> is a simple symmetric encryption scheme that is a good starting point in our studies, due to its simplicity. Let $\mathcal M=\mathcal K=\mathcal C=\lbrace0,1\rbrace^n$ and $\forall m\in\mathcal M$ and $k\in\mathcal K$, $|m|=|k|$. We define the encryption and decryption algorithms as&lt;/p>
+&lt;p>$$E(k,m)=k\oplus m$$
+$$D(k,c)=k\oplus c$$&lt;/p>
+&lt;h2 id="polynomials">Polynomials&lt;/h2>
+&lt;p>Polynomials are algebraic expressions composed of variables, commonly referred to as indeterminates, and coefficients. These coefficients function to scale the indeterminates and must be uniformly categorized, meaning they should all belong to a specific number set, such as integers or rational numbers.&lt;/p>
+&lt;h3 id="terminology">Terminology&lt;/h3>
+&lt;blockquote>
+&lt;p>&lt;em>&lt;strong>Univariate&lt;/strong>&lt;/em> polynomials are polynomials &lt;em>of one variable&lt;/em>. More precisely,&lt;/p>
+&lt;p>$$P(x)=\sum_{j=0}^m a_jx^j=a_mx^m+a_{m-1}x^{m-1}+&amp;hellip;+a_1x+a_0,$$&lt;/p>
+&lt;p>where \(a_j,&amp;hellip;,a_1\) are the coefficients, and \(x\) is the variable. If we let \(R\) denote the &lt;em>type&lt;/em> of the coefficients (e.g., rational, real, integer), then the set of all &lt;em>univariate polynomials with coefficients in&lt;/em> \(R\) is denoted \(R[x]\).&lt;/p>
+&lt;/blockquote>
+&lt;hr>
+&lt;blockquote>
+&lt;p>&lt;em>&lt;strong>Zero Polynomial&lt;/strong>&lt;/em>&lt;/p>
+&lt;p>The &lt;em>zero polynomial&lt;/em> is a polynomial in which &lt;strong>all the coefficients are \(0\)&lt;/strong>.&lt;/p>
+&lt;/blockquote>
+&lt;hr>
+&lt;blockquote>
+&lt;p>&lt;em>&lt;strong>One Polynomial&lt;/strong>&lt;/em>&lt;/p>
+&lt;p>A polynomial is called the &lt;strong>one polynomial&lt;/strong> if it is a &lt;em>zero polynomial&lt;/em> with the constant term (\(a_0\) above) of \(1\).&lt;/p>
+&lt;/blockquote>
+&lt;hr>
+&lt;blockquote>
+&lt;p>&lt;em>&lt;strong>Leading Coefficient&lt;/strong>&lt;/em>&lt;/p>
+&lt;p>The &lt;strong>leading coefficient&lt;/strong> is the the coefficient &lt;strong>of the term with the highest degree&lt;/strong>. We denote it as follows,
+$$Lc(P)=a_m$$&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="notation">Notation&lt;/h3>
+&lt;h4 id="degree-bounded-sets-of-polynomials">Degree-bounded Sets of Polynomials&lt;/h4>
+&lt;p>It is useful to look at sets of polynomial w.r.t. their &lt;em>degree&lt;/em>. If we, for instance, say \(m\) is the maximum degree allowed, we&amp;rsquo;d denote this set as \(R^{\le m}[x]\).&lt;/p>
+&lt;blockquote>
+&lt;p>Some other notations put the bound in the subscript, but I think it&amp;rsquo;s cleaner as a superscript; helps me remember that it&amp;rsquo;s a degree bound and not some sort of indexing.&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="polynomial-arithmetic">Polynomial Arithmetic&lt;/h3>
+&lt;blockquote>
+&lt;p>&amp;ldquo;Polynomials behave like integers in many ways. In particular, they can be added, subtracted and
+multiplied. In addition, they have their own notion of Euclidean Division. Informally speaking,
+we can add two polynomials by simply adding the coefficients of the same index, and we can
+multiply them by applying the distributive property, that is, by multiplying every term of the
+left factor with every term of the right factor and adding the results together.&amp;rdquo;&lt;/p>
+&lt;/blockquote>
+&lt;p>More formally, let \(P(x),R(x)\in R[x]\) be polynomials with \(P(x)=\sum_{n=0}^{m_1}a_nx^n\) and \(R(x)=\sum_{n=0}^{m_2}b_nx^n\). Then the &lt;strong>sum&lt;/strong> of these polynomials is&lt;/p>
+&lt;p>$$\sum_{n=0}^{m_1}a_nx^n+\sum_{n=0}^{m_2}b_nx^n\implies\sum_{n=0}^{\textbf{max}(m_1,m_2)}(a_n+b_n)x^n,$$&lt;/p>
+&lt;p>while the &lt;strong>product&lt;/strong> is defined as&lt;/p>
+&lt;p>$$\left(\sum_{n=0}^{m_1}a_nx^n\right)\cdot\left(\sum_{n=0}^{m_2}b_nx^n\right)\implies\sum_{n=0}^{m_1+m_2}\sum_{i=0}^n a_ib_{n-i}x^n.$$&lt;/p>
+&lt;blockquote>
+&lt;p>&lt;strong>Example 22: &lt;a class="link" href="https://leastauthority.com/community-matters/moonmath-manual/" target="_blank" rel="noopener"
+>MoonMath Manual&lt;/a>&lt;/strong>&lt;/p>
+&lt;p>To give an example of how polynomial arithmetic works, consider the following two integer polynomials \(P,Q\in\mathbb Z[x]\) with \(P(x)=5x^2-4x+2\) and \(Q(x)=x^3-2x^2+5\). The sum of these two polynomials is computed by adding the coefficients of each term with equal exponent in \(x\) (&lt;strong>Eq. 2&lt;/strong>). This yields the following:
+$$\begin{align*}
+(P+Q)(x) &amp;amp;= (0+1)x^3+(5-2)x^2+(-4+0)x+(2+5) \\
+&amp;amp;= x^3+3x^2-4x+7.
+\end{align*}$$
+The product \(P\cdot Q\) is computed by multiplying each term in the first factor with each term in the second factor (&lt;strong>Eq. 3&lt;/strong>). We get the following:
+\begin{align}
+(P\cdot Q)(x) &amp;amp;= (5x^2-4x+2)\cdot(x^3-2x^2+5) \\
+&amp;amp;= (5x^5-10x^4+25x^2)+(-4x^4+8x^3-20x)+(2x^3-4x^2+10) \\
+&amp;amp;= 5x^5-14x^4+10x^3+21x^2-20x+10.
+\end{align}&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="lagrange-interpolation">Lagrange Interpolation&lt;/h3>
+&lt;p>A neat thing about polynomials is that, for a polynomial \(P\) of degree \(m\), \(P\) is completely determined by its evaluation on \(m+1\) points. An important observation from this is that we can uniquely derive a polynomial of degree \(m\) from a set \(S\), where
+$$S=\lbrace(x_0,y_0),(x_1,y_1),&amp;hellip;,(x_m,y_m)\space|\space x_i\ne x_j\text{ for all indices }i\text{ and }j\rbrace.$$&lt;/p>
+&lt;p>In other words, polynomials have the property that given \(m+1\) pairs of points \(x_i,y_i\) for \(x_i\ne x_j\) are enough to determine the set of pairs \((x,P(x)),\space\forall x\in R\).&lt;/p>
+&lt;blockquote>
+&lt;h4 id="important">*Important&lt;/h4>
+&lt;p>If you want to find a polynomial that fits a given set of points&amp;ndash;and if its coefficients have a multiplicative inverse&amp;ndash;you can use the &lt;strong>Lagrange Interpolation&lt;/strong> method. This technique allows you to derive a polynomial \(P\) of degree \(m\) where \(P(x_i)=y_i,\space\forall (x_i,y_i)\in S\).&lt;/p>
+&lt;/blockquote>
+&lt;h4 id="algorithm-lagrange-interpolation">Algorithm: Lagrange Interpolation&lt;/h4>
+&lt;figure>&lt;img src="lagrange.png"/>
+&lt;/figure>
+&lt;h2 id="finite-galois-fields">Finite (Galois) Fields&lt;/h2>
+&lt;p>Finite fields are used extensively in modern cryptography. This is due to them possessing characteristics that make performing certain operations within them easy. But what even is a field? Why do we restrict them to being &lt;em>finite&lt;/em>? What&amp;rsquo;s useful about them?&lt;/p>
+&lt;h3 id="on-terminology">On Terminology&lt;/h3>
+&lt;p>The term &lt;em>Finite Field&lt;/em> is sometimes referred to as a &lt;em>Galois Field&lt;/em>, after &lt;a class="link" href="https://en.wikipedia.org/wiki/%C3%89variste_Galois" target="_blank" rel="noopener"
+>Évariste Galois&lt;/a>; a french mathematician who made enormous contributions to mathematics in his short 20 year life.&lt;/p>
+&lt;blockquote>
+&lt;p>These terms are interchangable, though we will opt to use the term &lt;em>Galois Field&lt;/em> (GF) in what follows to give credit where credit is due.&lt;/p>
+&lt;/blockquote>
+&lt;h3 id="fields">Fields&lt;/h3>
+&lt;p>The term &lt;em>field&lt;/em> is just a fancy way of denoting a &lt;strong>set&lt;/strong> on which the ordinary operations of &lt;em>addition&lt;/em>, &lt;em>subtraction&lt;/em>, &lt;em>multiplication&lt;/em>, and &lt;em>division&lt;/em> are defined. In fact, you are already familiar with (at least) a couple fields! For instance, the set of all real numbers \(\mathbb R\) forms a field; and likewise, so does the set of all rational numbers, \(\mathbb Q\). These operations are undoubtably defined on these sets, so we call them &lt;em>fields&lt;/em>.&lt;/p>
+&lt;p>So why doesn&amp;rsquo;t the set of integers \(\mathbb Z\) constitue a field? Well, more formally&amp;ndash;to be classified as a field&amp;ndash;the set must satisfy the following properties:&lt;/p>
+&lt;ol>
+&lt;li>&lt;em>&lt;strong>Associativity of addition and multiplication&lt;/strong>&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;ul>
+&lt;li>\(\forall a,b,c\in\mathbb F\):
+$$a+(b+c)=(a+b)+c$$
+$$a\cdot(b\cdot c)=(a\cdot b)\cdot c$$&lt;/li>
+&lt;/ul>
+&lt;ol start="2">
+&lt;li>&lt;em>&lt;strong>Commutativity of addition and multiplication&lt;/strong>&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;ul>
+&lt;li>\(\forall a,b,c\in\mathbb F\):
+$$a+b=b+a$$
+$$a\cdot b=b\cdot a$$&lt;/li>
+&lt;/ul>
+&lt;ol start="3">
+&lt;li>&lt;em>&lt;strong>Left-distributivity&lt;/strong>&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;ul>
+&lt;li>\(\forall a,b,c\in\mathbb F\)
+$$a\cdot(b+c)=a\cdot b+a\cdot c$$&lt;/li>
+&lt;/ul>
+&lt;ol start="4">
+&lt;li>&lt;em>&lt;strong>Existence of additive identity&lt;/strong>&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;ul>
+&lt;li>\(\exists i\in\mathbb F\) such that
+$$\forall a\in\mathbb F,\quad a+i=a$$&lt;/li>
+&lt;/ul>
+&lt;ol start="5">
+&lt;li>&lt;em>&lt;strong>Existence of a multiplicative identity&lt;/strong>&lt;/em>&lt;/li>
+&lt;/ol>
+&lt;ul>
+&lt;li>\(\exists e\in\mathbb F\) such that \(e\ne0\) and
+$$\forall a\in\mathbb F,\quad ae=a$$&lt;/li>
+&lt;/ul>
+&lt;ol start="6">
+&lt;li>&lt;em>&lt;strong>Existence of additive inverse&lt;/strong>&lt;/em> (often denoted as \(-a\))&lt;/li>
+&lt;/ol>
+&lt;ul>
+&lt;li>\(\forall a\in\mathbb F,\exists b\in\mathbb F\) such that
+$$a+b=0$$&lt;/li>
+&lt;/ul>
+&lt;ol start="7">
+&lt;li>&lt;em>&lt;strong>Existence of multiplicative inverse&lt;/strong>&lt;/em> (often denoted as \(a^{-1}\))&lt;/li>
+&lt;/ol>
+&lt;ul>
+&lt;li>\(\forall a\in\mathbb F\) where \(a\ne0\), \(\exists b\in\mathbb F\) such that
+$$a\cdot b=1$$&lt;/li>
+&lt;/ul>
+&lt;p>We can pretty clearly see that \(\mathbb Z\) satisfies &lt;em>most&lt;/em> of these properties. But it is missing one important one: &lt;em>existence of a multiplicative inverse&lt;/em>. Because \(\mathbb Z\) is restricted to only &lt;em>whole&lt;/em> numbers, it&amp;rsquo;s trivial to see that \(\mathbb Z\) does not satisfy this property, and therfore, does not constitue a field.&lt;/p></description></item><item><title>On Building a Free and Open Cyberspace</title><link>https://phasewalk1.github.io/p/on-building-a-free-and-open-cyberspace/</link><pubDate>Sat, 26 Aug 2023 00:00:00 +0000</pubDate><guid>https://phasewalk1.github.io/p/on-building-a-free-and-open-cyberspace/</guid><description>&lt;img src="https://phasewalk1.github.io/p/on-building-a-free-and-open-cyberspace/cover.jpg" alt="Featured image of post On Building a Free and Open Cyberspace" />&lt;p>One mustn’t look around at the current landscape and feel contentment. The time for building a truly free and open digital world is not now; but Yesterday. When they revealed to you their tactics to keep you under bird’s eyes, when they coordinated intelligences to round up protestors, when the global stage is wrought by surveillance capatlism and tyranny – you’d think you’d know what to do. We attack these at their source, hacking and deploying software that is resilient to adversarial attack, distributed to be infallible, and encrypted end-to-end to keep at bay various threat actors – from technocorps to rogues and nation-state APTs. We build anonymous transaction systems that allow people to directly opt-out of economic apparatuses that fuel the engines of war. We sew garments that trick facial recognition models, we generate proofs that computations were carried out to be verifiedly true over a string of encrypted inputs – If a user cannot afford to compute some f on their own machine, they should be able to offload it to a distributed network of machines that can compute f(x) without learning anything about the underlying x. Our call is this: Encrypt it once, and encrypt it well. For they are prying and they are selling you to a cause unknown. When mind uploads turn to reality, would you really want your memories in plaintext?&lt;/p></description></item></channel></rss>
